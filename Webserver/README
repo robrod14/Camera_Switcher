@@ -1,0 +1,23 @@
+Read Me Notes
+
+On the Pi zero you will need to make a service that starts the Webserver as soon as it boots and restarts if it craches. Use the following:
+
+Create a file /etc/systemd/system/Webserver.service
+
+[Unit]
+Description=Webserver service that starts service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=/usr/bin/python3 /user/home/pi/Desktop/Webserver.py
+
+[Install]
+WantedBy=multi-user.target
+
+
+save file and then run: systemctl start Webserver
+Then follow this up with this command to start on boot: systemctl enable Webserver
