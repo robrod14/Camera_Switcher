@@ -5,8 +5,8 @@ from paramiko.ssh_exception import AuthenticationException
 from paramiko.ssh_exception import NoValidConnectionsError
 from pynput import keyboard
 
-camera1_ip = 'x.x.x.x' #'172.16.105.131'
-camera2_ip = 'x.x.x.x'
+camera1_ip = '172.16.105.131' #'172.16.105.131'
+camera2_ip = '172.16.105.131'
 username = 'username'
 password = 'password'
 cmd_to_execute = 'flask run'
@@ -42,24 +42,24 @@ def on_press(key):
     global camera2
 
     try:
-        if key.char == "1":
+        if key.char == "1" and camera1 != "on":
             camera1 = turn_camera_on(camera1_ip)
             if camera2 == 'on':
                 camera2 = turn_camera_off(camera2_ip)
-            print(f'\nCamera1 is {camera1}. Camera2 is {camera2}.')
+            #print(f'\nCamera1 is {camera1}. Camera2 is {camera2}. First print')
             return True
-        elif key.char == "2":
+        elif key.char == "2" and camera2 != "on":
             camera2 = turn_camera_on(camera2_ip)
             if camera1 == 'on':
                 camera1 = turn_camera_off(camera1_ip)
-            print(f'\nCamera1 is {camera1}. Camera2 is {camera2}.')
+            #print(f'\nCamera1 is {camera1}. Camera2 is {camera2}. Second print')
             return True
         else:
-            if camera1 == 'on':
+            if camera1 == 'on' and key.char != "1":
                 camera1 = turn_camera_off(camera1_ip)
-            elif camera2 == 'on':
+            elif camera2 == 'on' and key.char != "2":
                 camera2 = turn_camera_off(camera2_ip)
-            print(f'\nCamera1 is {camera1}. Camera2 is {camera2}.')
+            #print(f'\nCamera1 is {camera1}. Camera2 is {camera2}. Third print {key.char} {type(key.char)}')
     except AttributeError as ex:
         print(ex)
 
