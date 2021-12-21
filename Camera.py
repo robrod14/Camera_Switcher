@@ -1,29 +1,20 @@
-import paramiko
 import requests
 
-from paramiko.ssh_exception import AuthenticationException
-from paramiko.ssh_exception import NoValidConnectionsError
 from pynput import keyboard
 
-camera1_ip = '172.16.105.131' #'172.16.105.131'
-camera2_ip = '172.16.105.131'
-username = 'username'
-password = 'password'
+camera1_ip = '10.1.10.93' #'172.16.105.131'
+camera2_ip = '10.1.10.138'
 cmd_to_execute = 'flask run'
 camera1 = 'off'
 camera2 = 'off'
 
-def connect(server):
-    try:
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.connect(server, username=username, password=password)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd_to_execute)
-    except AuthenticationException as a_exc:
-        print('Looks like there was an authentication error.')
-    except NoValidConnectionsError as n_exc:
-        print('Looks like the server is not up')
 
+def check_server_ready(ip_address):
+    r = requests.get(f'http://{ip_address}:5000')
+    if r.status_code != 200:
+       return False
+    else:
+       return True
 
 def turn_camera_on(ip_address):
     r = requests.get(f'http://{ip_address}:5000/api/v1/camera?Turn=on')
@@ -76,9 +67,14 @@ def wait_for_user_input():
 
 
 print(f'Running Camera switcher')
-print(f'Starting webserver on Camera 1')
-#connect(camera1)
-print(f'Camera 1 webserver started succesfully')
-print(f'Starting webserver on Camera 2')
-print(f'Camera 2 webserver started succesfully')
+print(f'Checking if Camera 1 is up and running')
+if check_server_ready(camera1_ip):
+   print(f"Camera 1 server is ready!")
+else:
+   print(f"Camera 1 server is not ready")
+print(f'Checking if Camera 2 is up and running')
+if check_server_ready(camera2_ip):
+   print(f"Camera 2 server if ready!")
+else:
+   print(f"Camera 2 server is not ready!")
 wait_for_user_input()
