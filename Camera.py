@@ -1,28 +1,29 @@
-import paramiko
 import requests
-
-from paramiko.ssh_exception import AuthenticationException
-from paramiko.ssh_exception import NoValidConnectionsError
 from pynput import keyboard
 
-camera1_ip = '172.16.105.131' #'172.16.105.131'
-camera2_ip = '172.16.105.131'
-username = 'username'
-password = 'password'
+GREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+END = '\033[0m'
+BOLD = '\x1b[1m'
+RESET = '\x1b[21m'
+
+camera1_ip =  '10.1.10.93' #'192.168.1.54'
+camera2_ip =  '10.1.10.138' #'192.168.1.67'
 cmd_to_execute = 'flask run'
 camera1 = 'off'
 camera2 = 'off'
 
-def connect(server):
+
+def check_server_ready(ip_address):
     try:
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.connect(server, username=username, password=password)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd_to_execute)
-    except AuthenticationException as a_exc:
-        print('Looks like there was an authentication error.')
-    except NoValidConnectionsError as n_exc:
-        print('Looks like the server is not up')
+        r = requests.get(f'http://{ip_address}:5000')
+        if r.status_code == 200:
+            return True
+    except requests.exceptions.ConnectionError  as ce:
+        print(f'{FAIL}Network problems;{END} {ce}.')
+    except requests.exceptions.Timeout as to:
+        print(f'{FAIL}Timeout Issues;{END} {to}.')
 
 
 def turn_camera_on(ip_address):
@@ -46,27 +47,27 @@ def on_press(key):
             camera1 = turn_camera_on(camera1_ip)
             if camera2 == 'on':
                 camera2 = turn_camera_off(camera2_ip)
-            #print(f'\nCamera1 is {camera1}. Camera2 is {camera2}. First print')
             return True
         elif key.char == "2" and camera2 != "on":
             camera2 = turn_camera_on(camera2_ip)
             if camera1 == 'on':
                 camera1 = turn_camera_off(camera1_ip)
-            #print(f'\nCamera1 is {camera1}. Camera2 is {camera2}. Second print')
             return True
         else:
             if camera1 == 'on' and key.char != "1":
                 camera1 = turn_camera_off(camera1_ip)
             elif camera2 == 'on' and key.char != "2":
                 camera2 = turn_camera_off(camera2_ip)
-            #print(f'\nCamera1 is {camera1}. Camera2 is {camera2}. Third print {key.char} {type(key.char)}')
     except AttributeError as ex:
         print(ex)
+        pass
 
 
 def on_release(key):
-    if key == keyboard.Key.esc:
-        return False
+    if key.char == '0':
+        print(f"{WARNING}Shutting down...{END}")
+        exit()
+
 
 
 def wait_for_user_input():
@@ -76,9 +77,23 @@ def wait_for_user_input():
 
 
 print(f'Running Camera switcher')
-print(f'Starting webserver on Camera 1')
-#connect(camera1)
-print(f'Camera 1 webserver started succesfully')
-print(f'Starting webserver on Camera 2')
-print(f'Camera 2 webserver started succesfully')
+print(f'Checking if Camera 1 is up and running')
+if check_server_ready(camera1_ip):
+   print(f"{GREEN}Camera 1 server is ready!{END}")
+   camera1_ready = True
+else:
+   print(f"{WARNING}Camera 1 server is not ready. Please make sure the server is on or give it more time.{END}")
+   camera1_ready = False
+print(f'Checking if Camera 2 is up and running')
+if check_server_ready(camera2_ip):
+   print(f"{GREEN}Camera 2 server if ready!{END}")
+   camera2_ready = True
+else:
+   print(f"{WARNING}Camera 2 server is not ready. Please make sure the server is on or give it more time.{END}")
+   camera2_ready = False
+if camera1_ready == False or camera2_ready == False:
+    print(f"{FAIL}Shutting down. So you can fix the servers.{END}")
+    exit()
+else:
+    print(f'Press {FAIL}{BOLD}"0"{RESET}{END} to close the program')
 wait_for_user_input()
