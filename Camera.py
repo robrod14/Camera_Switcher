@@ -8,8 +8,8 @@ END = '\033[0m'
 BOLD = '\x1b[1m'
 RESET = '\x1b[21m'
 
-camera1_ip =  '10.1.10.93' #'192.168.1.54'
-camera2_ip =  '10.1.10.138' #'192.168.1.67'
+camera1_ip = '10.1.10.93'  # '192.168.1.54'
+camera2_ip = '10.1.10.138'  # '192.168.1.67'
 cmd_to_execute = 'flask run'
 camera1 = 'off'
 camera2 = 'off'
@@ -58,40 +58,41 @@ def on_press(key):
                 camera1 = turn_camera_off(camera1_ip)
             elif camera2 == 'on' and key.char != "2":
                 camera2 = turn_camera_off(camera2_ip)
-    except AttributeError as ex:
-        print(ex)
+    except AttributeError:
         pass
 
 
 def on_release(key):
-    if key.char == '0':
-        print(f"{WARNING}Shutting down...{END}")
-        exit()
-
+    try:
+        if key.char == '0':
+            print(f"{WARNING}Shutting down...{END}")
+            exit()
+    except AttributeError:
+        pass
 
 
 def wait_for_user_input():
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()
-    listener.join() 
+    listener.join()
 
 
-print(f'Running Camera switcher')
-print(f'Checking if Camera 1 is up and running')
+print('Running Camera switcher')
+print('Checking if Camera 1 is up and running')
 if check_server_ready(camera1_ip):
-   print(f"{GREEN}Camera 1 server is ready!{END}")
-   camera1_ready = True
+    print(f"{GREEN}Camera 1 server is ready!{END}")
+    camera1_ready = True
 else:
-   print(f"{WARNING}Camera 1 server is not ready. Please make sure the server is on or give it more time.{END}")
-   camera1_ready = False
-print(f'Checking if Camera 2 is up and running')
+    print(f"{WARNING}Camera 1 server is not ready. Please make sure the server is on or give it more time.{END}")
+    camera1_ready = False
+print('Checking if Camera 2 is up and running')
 if check_server_ready(camera2_ip):
-   print(f"{GREEN}Camera 2 server if ready!{END}")
-   camera2_ready = True
+    print(f"{GREEN}Camera 2 server if ready!{END}")
+    camera2_ready = True
 else:
-   print(f"{WARNING}Camera 2 server is not ready. Please make sure the server is on or give it more time.{END}")
-   camera2_ready = False
-if camera1_ready == False or camera2_ready == False:
+    print(f"{WARNING}Camera 2 server is not ready. Please make sure the server is on or give it more time.{END}")
+    camera2_ready = False
+if camera1_ready is False or camera2_ready is False:
     print(f"{FAIL}Shutting down. So you can fix the servers.{END}")
     exit()
 else:
