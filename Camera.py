@@ -1,4 +1,5 @@
 import requests
+import signal
 from pynput import keyboard
 
 GREEN = '\033[92m'
@@ -8,8 +9,8 @@ END = '\033[0m'
 BOLD = '\x1b[1m'
 RESET = '\x1b[21m'
 
-camera1_ip = '10.1.10.93'  # '192.168.1.54'
-camera2_ip = '10.1.10.138'  # '192.168.1.67'
+camera1_ip = '192.1.10.93'  # '192.168.1.54'
+camera2_ip = '192.1.10.138'  # '192.168.1.67'
 cmd_to_execute = 'flask run'
 camera1 = 'off'
 camera2 = 'off'
@@ -20,7 +21,7 @@ def check_server_ready(ip_address):
         r = requests.get(f'http://{ip_address}:5000')
         if r.status_code == 200:
             return True
-    except requests.exceptions.ConnectionError  as ce:
+    except requests.exceptions.ConnectionError as ce:
         print(f'{FAIL}Network problems;{END} {ce}.')
     except requests.exceptions.Timeout as to:
         print(f'{FAIL}Timeout Issues;{END} {to}.')
@@ -77,6 +78,12 @@ def wait_for_user_input():
     listener.join()
 
 
+def handler(signum, frame):
+    print(f"{WARNING}Shutting down...{END}")
+    exit()
+
+
+signal.signal(signal.SIGINT, handler)
 print('Running Camera switcher')
 print('Checking if Camera 1 is up and running')
 if check_server_ready(camera1_ip):
